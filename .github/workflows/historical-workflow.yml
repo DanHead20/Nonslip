@@ -1,0 +1,56 @@
+name: Historical Data Collection (One-Time)
+
+on:
+  # Manual trigger only - no automatic schedule
+  workflow_dispatch:
+
+jobs:
+  collect-historical:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Collect historical data (Jan-Oct 2025)
+      run: |
+        echo "Starting historical data collection..."
+        echo "This may take 10-15 minutes to search all months..."
+        python historical_data_collector.py
+    
+    - name: Upload results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: historical-leads-jan-oct-2025
+        path: |
+          *.csv
+          *.json
+          *.html
+        retention-days: 90
+    
+    - name: Summary
+      if: always()
+      run: |
+        echo "Historical data collection complete!"
+        echo ""
+        echo "Download your files:"
+        echo "1. Go to Actions tab"
+        echo "2. Click this workflow run"
+        echo "3. Scroll to 'Artifacts'"
+        echo "4. Download the ZIP file"
+        echo ""
+        echo "Files included:"
+        echo "  • CSV file (import to Excel/CRM)"
+        echo "  • JSON file (detailed data)"
+        echo "  • HTML report (summary statistics)"
